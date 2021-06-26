@@ -11,7 +11,7 @@ Two examples of parsers created with YARP are provided in the examples directory
 
 To create a parser, start by extending the Parser class. Use the @lexemes annotation to set the expected lexemes for the rule (and all rules until the lexemes are redefined).
 
-```json
+```python
 json_lexemes = {'{', '}', ',', '[', ']', ':', 'true', 'false', 'null', '"', '\\'}
 class JSONParser(Parser):
 
@@ -25,7 +25,7 @@ def parse(self):
 
 Rules that add nodes to the abstract syntax tree can be created using the @ast annotation. The rule below will parse the lexeme 'true' and add a node to the AST. If this rule is encountered and a token mismatch occurs, a syntax error will be printed along with information about where in the token stream it occurred. Note that the @ast annotation also allows for optional rules with the 'optional' parameter.
 
-```json
+```python
 @ast("true", require=['true'], description="boolean")
 def true_val(self, tokens):
     pass
@@ -35,7 +35,7 @@ def true_val(self, tokens):
 
 You can match patterns forward into the token stream without consuming tokens. This is essentially the lookahead functionality from other parser generators.
 
-```json
+```python
 @ast("array", require=['['], description="array")
 def json_array(self, tokens):
     self.consume_whitespace()
@@ -49,7 +49,7 @@ def json_array(self, tokens):
 
 Rules with alternatives can be added using the parse_alternatives function. This uses pattern matching (of one or more tokens) to determine which production rule to use. If no alternative is valid, then a syntax error will occur with the provided description of what was expected.
 
-```json
+```python
 @ast("value")
 def value(self):
     self.consume_whitespace()
