@@ -6,5 +6,5 @@ setup(name='yarp-parser',
       version='0.1',
       description='YARP - Yet Another Recursive Parser.',
       author='Eric Wimberley',
-      packages=['yarp-parser'],
+      packages=['yarp_parser'],
       )

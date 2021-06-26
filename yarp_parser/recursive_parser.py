@@ -1,7 +1,7 @@
 from functools import wraps
 import re
 
-from yarp.streaming_lexer import *
+from yarp_parser.streaming_lexer import *
 
 
 class Tree:

@@ -1,4 +1,4 @@
-from yarp.recursive_parser import *
+from yarp_parser.recursive_parser import *
 
 json_lexemes = {'{', '}', ',', '[', ']', ':', 'true', 'false', 'null', '"', '\\'}
 NUMBER_REGEX = "^[0-9]+$"
