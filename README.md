@@ -1,4 +1,4 @@
-# yarp
+# YARP
 YARP - Yet Another Recursive Parser
 
 YARP provides a framework for easily creating recursive parsers in Python. Hand-built parsers are fast, flexible, and allow easy error detection and reporting when compared to parser generators that use EBNF.
