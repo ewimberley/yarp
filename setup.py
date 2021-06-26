@@ -6,7 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(name='yarp_parser',
-      version='0.1',
+      version='0.1-alpha',
       description='YARP - Yet Another Recursive Parser.',
       author='Eric Wimberley',
       packages=['yarp_parser'],
