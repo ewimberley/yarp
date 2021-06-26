@@ -37,11 +37,17 @@ class SyntaxError(Exception):
 
 
 class RegularExpression:
+    """When pattern matching, provide an instance of this to perform regular expression pattern matching."""
     def __init__(self, re):
         self.pattern = re
 
 
 def ast(data, require=None, description=None, optional=None):
+    """
+    This annotation automatically builds tree nodes and places them in the correct location.
+    Expected or optional tokens for the start of a rule can be provided as parameters,
+    along with a description of what is expected for automatic syntax error generation.
+    """
     def _ast(func):
         def ast_stack_function(self, tokens=None, *args, **kwargs):
             self.create_push(data)
@@ -67,6 +73,7 @@ def ast(data, require=None, description=None, optional=None):
     return _ast
 
 def lexemes(lexemes):
+    """Use this annotation to notify the lexer that it should use the provided lexeme set."""
     def _lexemes(func):
         @wraps(func)
         def inner(self, *args, **kwargs):
@@ -79,6 +86,8 @@ def lexemes(lexemes):
     return _lexemes
 
 class Parser:
+    """Extend this class to build your parser."""
+
     def __init__(self, string):
         self.tokens = []
         self.lexer = Lexer([], string)
@@ -86,6 +95,7 @@ class Parser:
         self.tree = None
 
     def pretty_print(self, node=None, level=0):
+        """Print the AST in a human readable fashion."""
         if node is None:
             node = self.tree
         indent = "--" * level
@@ -97,24 +107,29 @@ class Parser:
             print(f"{indent}{node}")
 
     def parse(self):
+        """Call this from the entry point of your parser to create the root AST node."""
         root = Tree("root")
         self.ast_path.append(root)
         self.tree = root
         return True
 
     def create_push(self, data):
+        """Create an AST node, add it to the parent node, and push it onto the AST stack."""
         self.ast_path.append(self.create_append(data))
         return self.ast_path[-1]
 
     def create_append(self, data):
+        """Create an AST and add it to the parent node, but don't push it."""
         node = Tree(data)
         self.ast_path[-1].children.append(node)
         return node
 
     def has_next(self):
+        """Returns true if there is a next token in the token stream."""
         return len(self.lexer.lookahead()) == 1
 
     def consume(self, num_tokens=1):
+        """Consume one or more tokens and return them."""
         if num_tokens > 1:
             return [self.consume() for i in range(num_tokens)]
         elif self.has_next():
@@ -124,17 +139,20 @@ class Parser:
         raise SyntaxError("Unexpected end of token stream.")
 
     def peak(self):
+        """Look at the next token without consuming it."""
         if self.has_next():
             return self.lexer.lookahead()[0]
         raise SyntaxError("Unexpected end of token stream.")
 
     def parse_alternatives(self, alternatives, description):
+        """Use this method for rules with alternative parsing options."""
         for alternative in alternatives:
             if self.match_pattern(alternative[0]):
                 return alternative[1]()
         raise SyntaxError(description, None, self.lexer)
 
     def match_pattern(self, pattern):
+        """Match a pattern in the upcoming token stream without consuming it."""
         lookahead = self.lexer.lookahead(len(pattern))
         if len(lookahead) != len(pattern):
             return False
@@ -150,6 +168,7 @@ class Parser:
         return True
 
     def accept(self, sym):
+        """Consume the next token, but only if it matches the provided pattern."""
         t = self.peak()
         if isinstance(sym, list) or isinstance(sym, dict) or isinstance(sym, set):
             if str(t) in sym:
@@ -160,6 +179,7 @@ class Parser:
         return False
 
     def expect_pattern(self, syms, description):
+        """Try to match a pattern, and if it does not match, a syntax error occurs."""
         match = self.match_pattern(syms)
         if match:
             return [self.accept(sym) for sym in syms]
@@ -167,6 +187,7 @@ class Parser:
             raise SyntaxError(description, None, self.lexer)
 
     def expect(self, sym, description):
+        """Expect a single token. If it is not next in the token stream a syntax error occurs."""
         t = self.peak()
         if isinstance(sym, list) or isinstance(sym, dict) or isinstance(sym, set):
             if str(t) not in sym:
@@ -176,6 +197,8 @@ class Parser:
         return t
 
     def consume_whitespace(self):
+        """Consume all whitespace."""
+        #FIXME allow for a dynamic definition of whitespace
         if self.has_next():
             while self.accept(' ') or self.accept('\n'):
                 pass

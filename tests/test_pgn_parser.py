@@ -14,8 +14,8 @@ class TestParser(unittest.TestCase):
         tree = parser.tree
         tokens = parser.tokens
         #parser.pretty_print()
-        print(tree)
-        print(tokens)
+        #print(tree)
+        #print(tokens)
         return tree, tokens
 
     def test_king_side_castle(self):
