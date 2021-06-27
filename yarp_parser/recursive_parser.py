@@ -218,6 +218,8 @@ class Parser:
             while str(t) in self.lexer.whitespace:
                 t = self.lexer.parse_next_token()
                 whitespace_str += str(t)
+                if not self.has_next():
+                    break
                 t = self.peak()
             if len(whitespace_str) > 0 and not self.lexer.ignore_whitespace:
                 self.tokens.append(whitespace_str)
