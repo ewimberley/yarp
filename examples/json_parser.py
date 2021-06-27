@@ -1,11 +1,11 @@
 from yarp_parser.recursive_parser import *
 
-json_lexemes = {'{', '}', ',', '[', ']', ':', 'true', 'false', 'null', '"', '\\'}
+#json_lexemes = {'{', '}', ',', '[', ']', ':', 'true', 'false', 'null', '"'}#, '\\'}
 NUMBER_REGEX = "^[0-9]+$"
 
 class JSONParser(Parser):
 
-    @lexemes(json_lexemes)
+    @lexemes({'{', '}', ',', '[', ']', ':', 'true', 'false', 'null', '"'})
     def parse(self):
         super().parse()
         self.value()
@@ -47,6 +47,7 @@ class JSONParser(Parser):
             self.accept(',')
         self.accept(']')
 
+    @lexemes({'"', '\\', RegularExpression('^[^\\\\"]*')})
     @ast("string", require=['"'], description="string")
     def string(self, tokens):
         #TODO implement escaped strings

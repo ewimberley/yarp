@@ -1,4 +1,7 @@
+import re
+
 class Token:
+    """Terminal nodes in the AST. These are returned by the lexer when parse_next_token is called."""
     def __init__(self, data):
         self.data = data
 
@@ -8,14 +11,38 @@ class Token:
     def __repr__(self):
         return f"'{self}'"
 
+
+class RegularExpression:
+    """When pattern matching, provide an instance of this to perform regular expression pattern matching."""
+    def __init__(self, re):
+        self.pattern = re
+
+
 class Lexer:
-    def __init__(self, lexemes, string):
+    """Divide a string up into tokens based on a list of lexemes and whitespace."""
+    def __init__(self, lexemes, string, whitespace=[" ", "\t", "\n", "\r"], ignore_whitespace=True):
         self.cursor = 0
-        self.lexemes = lexemes
+        self.lexemes = []
+        self.string_lexemes = []
+        self.re_lexemes = []
+        self.set_lexemes(lexemes)
+        self.whitespace = whitespace
+        self.ignore_whitespace = ignore_whitespace
         self.string = string
+
+    def set_whitespace(self, whitespace, ignore_whitespace=True):
+        self.whitespace = whitespace
+        self.ignore_whitespace = ignore_whitespace
 
     def set_lexemes(self, lexemes):
         self.lexemes = lexemes
+        self.string_lexemes = []
+        self.re_lexemes = []
+        for lexeme in lexemes:
+            if isinstance(lexeme, str):
+                self.string_lexemes.append(lexeme)
+            elif isinstance(lexeme, RegularExpression):
+                self.re_lexemes.append(lexeme)
 
     def lookahead(self, lookahead=1):
         cursor_buffer = self.cursor
@@ -30,17 +57,32 @@ class Lexer:
     def parse_next_token(self):
         while self.cursor < len(self.string):
             t = self.string[self.cursor]
-            if t in self.lexemes:
+            if t in self.string_lexemes:
                 current = Token(t)
+                #FIXME deal with tokens with length greater than 1 by using "startswith"
                 self.cursor += 1
                 return current
-            elif t in [" ", "\n", "\r", "\t"]: #ignore non-lexeme whitespace
+            elif self.matches_re_lexeme():
+                t = self.matches_re_lexeme()
+                self.cursor += len(t)
+                return t
+            elif t in self.whitespace: #ignore non-lexeme whitespace
                 self.cursor += 1
+                return t
             else:
                 atom_str = self.atom(self.cursor)
                 atom = Token(atom_str)
                 self.cursor += len(atom_str)
                 return atom
+
+    def matches_re_lexeme(self):
+        for re_lexeme in self.re_lexemes:
+            match = re.match(re_lexeme.pattern, self.string[self.cursor:])
+            if match:
+                token_len = match.regs[0][1]
+                return self.string[self.cursor:self.cursor+token_len]
+        return False
+
 
     def atom(self, i):
         #XXX this can cause an infinite loop if it returns an empty string

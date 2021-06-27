@@ -20,6 +20,7 @@ class Tree:
     def __repr__(self):
         return f"'{self}'"
 
+
 class SyntaxError(Exception):
     """
     Use this exception to indicate a syntax error has occurred.
@@ -34,12 +35,6 @@ class SyntaxError(Exception):
         else:
             self.message = f"Expected {description}. Error near: '{str_at_token}'"
         super().__init__(self.message)
-
-
-class RegularExpression:
-    """When pattern matching, provide an instance of this to perform regular expression pattern matching."""
-    def __init__(self, re):
-        self.pattern = re
 
 
 def ast(data, require=None, description=None, optional=None):
@@ -84,6 +79,20 @@ def lexemes(lexemes):
             return result
         return inner
     return _lexemes
+
+def whitespace(whitespace, ignore_whitespace=True):
+    """Use this annotation to notify the lexer that it should use the provided whitespace set."""
+    def _whitespace(func):
+        @wraps(func)
+        def inner(self, *args, **kwargs):
+            whitespace_buffer = self.lexer.whitespace
+            ignore_whitespace_buffer = self.lexer.ignore_whitespace
+            self.lexer.set_whitespace(whitespace, ignore_whitespace)
+            result = func(self, *args, **kwargs)
+            self.lexer.set_whitespace(whitespace_buffer, ignore_whitespace_buffer)
+            return result
+        return inner
+    return _whitespace
 
 class Parser:
     """Extend this class to build your parser."""
@@ -200,5 +209,14 @@ class Parser:
         """Consume all whitespace."""
         #FIXME allow for a dynamic definition of whitespace
         if self.has_next():
-            while self.accept(' ') or self.accept('\n'):
-                pass
+            t = self.peak()
+            whitespace_str = ""
+            while str(t) in self.lexer.whitespace:
+                t = self.lexer.parse_next_token()
+                whitespace_str += str(t)
+                t = self.peak()
+            if len(whitespace_str) > 0 and not self.lexer.ignore_whitespace:
+                self.tokens.append(whitespace_str)
+                return
+            #while self.accept(' ') or self.accept('\n'):
+            #    pass
