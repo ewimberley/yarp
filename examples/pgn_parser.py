@@ -103,14 +103,14 @@ class PGNParser(Parser):
         self.move_number()
         self.consume_whitespace()
         self.move()
-        space_between_moves = self.accept(' ') or space_between_moves
+        space_between_moves = self.consume_whitespace() or space_between_moves
         self.anno_glyph()
-        space_between_moves = self.accept(' ') or space_between_moves
+        space_between_moves = self.consume_whitespace() or space_between_moves
         self.comment()
-        space_between_moves = self.accept(' ') or space_between_moves
+        space_between_moves = self.consume_whitespace() or space_between_moves
         if self.match_pattern([RegularExpression(NUMBER_REGEX), DOT]):
             self.move_number()
-        space_between_moves = self.accept(' ') or space_between_moves
+        space_between_moves = self.consume_whitespace() or space_between_moves
         move_lookahead = PIECES.union(FILES)
         move_lookahead.add('O') #castle
         if self.match_pattern([move_lookahead]):

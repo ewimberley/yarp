@@ -217,6 +217,7 @@ class Parser:
                 t = self.peak()
             if len(whitespace_str) > 0 and not self.lexer.ignore_whitespace:
                 self.tokens.append(whitespace_str)
-                return
-            #while self.accept(' ') or self.accept('\n'):
-            #    pass
+                return True
+            elif len(whitespace_str) > 0:
+                return True
+            return False
