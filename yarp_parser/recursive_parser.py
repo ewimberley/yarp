@@ -28,12 +28,16 @@ class SyntaxError(Exception):
     """
 
     def __init__(self, description, token=None, lexer=None):
-        end = min(lexer.cursor+20, len(lexer.string))
-        str_at_token = "".join([c for c in lexer.string[lexer.cursor:end]])
+        if lexer is not None:
+            end = min(lexer.cursor+20, len(lexer.string))
+            str_at_token = "".join([c for c in lexer.string[lexer.cursor:end]])
         if token is not None:
             self.message = f"Expected {description}, found token '{token}' instead. Error near: '{str_at_token}'"
         else:
-            self.message = f"Expected {description}. Error near: '{str_at_token}'"
+            if lexer is not None:
+                self.message = f"Expected {description}. Error near: '{str_at_token}'"
+            else:
+                self.message = description
         super().__init__(self.message)
 
 
